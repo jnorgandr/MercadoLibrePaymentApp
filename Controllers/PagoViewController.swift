@@ -13,14 +13,24 @@ import SwiftyJSON
 
 let apiPaymentURL = "https://api.mercadopago.com/v1/payment_methods?public_key=444a9ef5-8a6b-429f-abdf-587639155d88"
 
+let saleNotificationKey = "saleFinished"
+
 class PagoViewController: UIViewController, UITextFieldDelegate, UIPickerViewDelegate, UIPickerViewDataSource {
     
 
+    @IBOutlet weak var mainViewImage: UIImageView!
     @IBOutlet weak var montoLabel: UITextField!
     @IBOutlet weak var medioDePagoPickerView: UIPickerView!
     
     var mediosDePago: [MedioDePago] = []
     
+    //Notification.Name for NotificationCenter Protocol
+    let saleFinish = Notification.Name(rawValue: saleNotificationKey)
+    
+    //Remove Observer to avoid memory issues
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -28,6 +38,7 @@ class PagoViewController: UIViewController, UITextFieldDelegate, UIPickerViewDel
         montoLabel.delegate = self
         medioDePagoPickerView.delegate = self
         medioDePagoPickerView.dataSource = self
+        Observer()
 
         // Do any additional setup after loading the view.
         
@@ -38,7 +49,21 @@ class PagoViewController: UIViewController, UITextFieldDelegate, UIPickerViewDel
     override func viewWillAppear(_ animated: Bool) {
         if CompraSingleton.shared.buyFinished == true {
             Alert.buyFinishedAlert(on: self)
+            mainViewImage.image = UIImage(named: "check")
         }
+    }
+    
+    //Observer Registration
+    func Observer() {
+        
+        //Waiting for sale finished notification
+        NotificationCenter.default.addObserver(self, selector: #selector(self.saleFinishedMessage(notification:)), name: saleFinish, object: nil)
+    }
+    
+    //Notification trigger
+    @objc func saleFinishedMessage(notification: NSNotification) {
+        print("La venta se ha realizado con exito")
+        
     }
     
     @IBAction func montoChanged(_ sender: Any) {
@@ -49,7 +74,7 @@ class PagoViewController: UIViewController, UITextFieldDelegate, UIPickerViewDel
     @IBAction func nextViewButton(_ sender: Any) {
     }
     
-    
+    // Dismiss Numpad
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         self.view.endEditing(true)
     }
@@ -179,7 +204,7 @@ class PagoViewController: UIViewController, UITextFieldDelegate, UIPickerViewDel
  }
     
 }
-
+// Extensions
 extension CGRect {
     init(_ x:CGFloat, _ y:CGFloat, _ w:CGFloat, _ h:CGFloat) {
         self.init(x:x, y:y, width:w, height:h)

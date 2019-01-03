@@ -110,6 +110,10 @@ class CuotaViewController: UIViewController, UIPickerViewDelegate, UIPickerViewD
     
     @IBAction func finishSaleButton(_ sender: Any) {
         CompraSingleton.shared.buyFinished = true
+        
+        // Post Notification
+        let name = Notification.Name(rawValue: saleNotificationKey)
+        NotificationCenter.default.post(name: name, object: nil)
     }
     
 }
